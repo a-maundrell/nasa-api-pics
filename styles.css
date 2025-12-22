@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 * {
   padding: 0;
   margin: 0;
@@ -8,7 +10,7 @@ body {
   margin: 0;
   background: whitesmoke;
   overflow-x: hidden;
-  font-family: Verdana, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1rem;
   line-height: 1.8rem;
 }
@@ -68,9 +70,23 @@ body {
   text-shadow: 0 0px 10px #054605;
 }
 
+.favourite {
+  color: #d11a2a;
+  cursor: pointer;
+  user-select: none;
+  text-shadow: 0 0px 0px #7a121a;
+  transition: text-shadow 0.3s ease-in-out;
+  font-size: 24px;
+}
+
+.favourite:hover {
+  filter: brightness(1.6);
+  text-shadow: 0 0px 10px #7a121a;
+}
+
 /* Images Container */
 .images-container {
-
+  width: 50%;
   margin-top: 50px;
 }
 
@@ -86,7 +102,11 @@ body {
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
 }
 
-
+.card-image-top {
+  width: 100%;
+  height: auto;
+  border-radius: 5px 5px 0 0;
+}
 
 .card-body {
   padding: 20px;
@@ -121,13 +141,19 @@ body {
   body {
     line-height: 1.4rem;
     font-size: 0.9rem;
-
+    text-align: justify;
   }
-
 
   .card-title {
     font-size: 20px;
   }
 
+  .images-container {
+    width: 100%;
+    /* margin-top: 40px; */
+  }
   
+  .save-confirmed {
+    right: 25px;
+  }
 }
