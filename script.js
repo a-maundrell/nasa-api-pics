@@ -54,11 +54,20 @@ function updateDOM() {
     cardTitle.classList.add('card-title');
     cardTitle.textContent = data.title || 'Untitled';
 
+    const favouriteSpan = document.createElement('span');
+    favouriteSpan.title = 'Add to Favourites';
+    
+    const favouriteIcon = document.createElement('i');
+    favouriteIcon.classList.add('fa-regular', 'fa-heart', 'favourite');
+
+    favouriteSpan.appendChild(favouriteIcon);    
+
     const cardText = document.createElement('p');
     cardText.classList.add('card-text');
     cardText.textContent = data.description || 'No description provided.';
     
     cardBody.appendChild(cardTitle);
+    cardBody.appendChild(favouriteSpan);
     cardBody.appendChild(cardText);
 
     // Date, Author and Copyright Info
