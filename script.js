@@ -15,17 +15,34 @@ let resultsArray = {};
 let resultsItems = [];
 let favorites = {};
 
-function updateDOM() {
+function saveFavoritesToLocalStorage() {
+  localStorage.setItem('nasaFavorites', JSON.stringify(favorites));
+}
+
+function getFavoritesFromLocalStorage() {
+  const storedFavorites = localStorage.getItem('nasaFavorites');
+  favorites = storedFavorites ? JSON.parse(storedFavorites) : {};
+}
+
+function showFavoritesPage() {
+  resultsNav.classList.add('hidden');
+  favoritesNav.classList.remove('hidden');
+  updateDOM('favorites');
+}
+
+function updateDOM(mode = 'results') {
   imagesContainer.textContent = '';
 
-  resultsItems.forEach((result) => {
+  const items = mode === 'favorites' ? Object.values(favorites) : resultsItems;
+
+  items.forEach((result) => {
     const data = result.data?.[0];
     const imgHref = result.links?.[0]?.href;
 
-    if (!data || !imgHref) {
-      console.warn('Missing data or image link for result:', result);
-      return;
-    }
+    if (!data || !imgHref) return;
+
+    const itemKey = data.nasa_id;
+
     // Card
     const card = document.createElement('div');
     card.classList.add('card');
@@ -56,10 +73,37 @@ function updateDOM() {
     cardTitle.textContent = data.title || 'Untitled';
 
     const favoriteSpan = document.createElement('span');
-    favoriteSpan.title = 'Add to Favorites';
+    favoriteSpan.title = mode === 'favorites' ? 'Remove from Favorites' : 'Add to Favorites';
 
     const favoriteIcon = document.createElement('i');
-    favoriteIcon.classList.add('fa-regular', 'fa-heart', 'favorite');
+    favoriteIcon.classList.add('fa-heart', 'favorite');
+    favoriteIcon.classList.toggle('fa-solid', !!favorites[itemKey]);
+    favoriteIcon.classList.toggle('fa-regular', !favorites[itemKey]);
+
+    const isFavorited = !!favorites[itemKey];
+    favoriteIcon.classList.add(isFavorited ? 'fa-solid' : 'fa-regular');
+
+    favoriteIcon.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (favorites[itemKey]) {
+        delete favorites[itemKey];
+      } else {
+        favorites[itemKey] = result;
+      }
+
+      saveFavoritesToLocalStorage();
+
+      if (favorites[itemKey]) {
+        saveConfirmed.classList.remove('hidden');
+        setTimeout(() => {
+          saveConfirmed.classList.add('hidden');
+        }, 1500);
+      }
+
+      updateDOM(mode);
+    });
 
     favoriteSpan.appendChild(favoriteIcon);    
 
@@ -86,7 +130,7 @@ function updateDOM() {
     copyright.textContent = ' \u00A9';
 
     small.appendChild(strong);
-    small.appendChild(document.createTextNode(' '));
+    small.appendChild(document.createTextNode(' • '));
     small.appendChild(author);
     small.appendChild(copyright);
 
@@ -110,10 +154,24 @@ async function getNasaPictures() {
     resultsItems = resultsArray?.collection?.items || [];
     console.log('Fetched items:', resultsItems);
 
-    updateDOM();
+    updateDOM('results');
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 }
 
+document.getElementById('showFavorites').addEventListener('click', showFavoritesPage);
+document.getElementById('showResults').addEventListener('click', showResultsPage);
+
+document.getElementById('loadMore').addEventListener('click', () => {
+  getNasaPictures();
+});
+
+function showResultsPage() {
+  resultsNav.classList.remove('hidden');
+  favoritesNav.classList.add('hidden');
+  updateDOM('results');
+}
+
+getFavoritesFromLocalStorage();
 getNasaPictures();
