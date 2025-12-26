@@ -70,7 +70,7 @@ body {
   text-shadow: 0 0px 10px #054605;
 }
 
-.favourite {
+.favorite {
   color: #d11a2a;
   cursor: pointer;
   user-select: none;
@@ -79,7 +79,7 @@ body {
   font-size: 24px;
 }
 
-.favourite:hover {
+.favorite:hover {
   filter: brightness(1.6);
   text-shadow: 0 0px 10px #7a121a;
 }

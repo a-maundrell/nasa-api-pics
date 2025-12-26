@@ -1,7 +1,7 @@
 'use strict';
 
 const resultsNav = document.getElementById('resultsNav');
-const favouritesNav = document.getElementById('favouritesNav');
+const favoritesNav = document.getElementById('ritesNav');
 const imagesContainer = document.querySelector('.images-container');
 const saveConfirmed = document.querySelector('.save-confirmed');
 const loader = document.querySelector('.loader');
@@ -13,6 +13,7 @@ const apiUrl = `https://images-api.nasa.gov/search?q=${encodeURIComponent(query)
 
 let resultsArray = {};
 let resultsItems = [];
+let favorites = {};
 
 function updateDOM() {
   imagesContainer.textContent = '';
@@ -54,20 +55,20 @@ function updateDOM() {
     cardTitle.classList.add('card-title');
     cardTitle.textContent = data.title || 'Untitled';
 
-    const favouriteSpan = document.createElement('span');
-    favouriteSpan.title = 'Add to Favourites';
-    
-    const favouriteIcon = document.createElement('i');
-    favouriteIcon.classList.add('fa-regular', 'fa-heart', 'favourite');
+    const favoriteSpan = document.createElement('span');
+    favoriteSpan.title = 'Add to Favorites';
 
-    favouriteSpan.appendChild(favouriteIcon);    
+    const favoriteIcon = document.createElement('i');
+    favoriteIcon.classList.add('fa-regular', 'fa-heart', 'favorite');
+
+    favoriteSpan.appendChild(favoriteIcon);    
 
     const cardText = document.createElement('p');
     cardText.classList.add('card-text');
     cardText.textContent = data.description || 'No description provided.';
     
     cardBody.appendChild(cardTitle);
-    cardBody.appendChild(favouriteSpan);
+    cardBody.appendChild(favoriteSpan);
     cardBody.appendChild(cardText);
 
     // Date, Author and Copyright Info
