@@ -5,6 +5,7 @@ const favoritesNav = document.getElementById('favoritesNav');
 const imagesContainer = document.querySelector('.images-container');
 const saveConfirmed = document.querySelector('.save-confirmed');
 const loader = document.querySelector('.loader');
+const noFavorites = document.querySelector('.no-favorites');
 
 const count = 5;
 // You can change the query term to fetch different images: galaxy, mars, stars, etc.
@@ -14,6 +15,21 @@ const apiUrl = `https://images-api.nasa.gov/search?q=${encodeURIComponent(query)
 let resultsArray = {};
 let resultsItems = [];
 let favorites = {};
+
+const toastVisibleMs = 3000;
+const toastFadeMs = 700;
+
+function showToast(el, visibleMs = toastVisibleMs) {
+  if (!el) return;
+
+  el.classList.remove('hidden');
+  requestAnimationFrame(() => el.classList.add('show'));
+
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.classList.add('hidden'), toastFadeMs);
+  }, visibleMs);
+}
 
 function saveFavoritesToLocalStorage() {
   localStorage.setItem('nasaFavorites', JSON.stringify(favorites));
@@ -34,6 +50,11 @@ function updateDOM(mode = 'results') {
   imagesContainer.textContent = '';
 
   const items = mode === 'favorites' ? Object.values(favorites) : resultsItems;
+
+  if (mode === 'favorites' && items.length === 0) {
+    showToast(noFavorites);
+    return;
+  }
 
   items.forEach((result) => {
     const data = result.data?.[0];
@@ -73,15 +94,12 @@ function updateDOM(mode = 'results') {
     cardTitle.textContent = data.title || 'Untitled';
 
     const favoriteSpan = document.createElement('span');
-    favoriteSpan.title = mode === 'favorites' ? 'Remove from Favorites' : 'Add to Favorites';
+    favoriteSpan.title = favorites[itemKey] ? 'Remove from Favorites' : 'Add to Favorites';
 
     const favoriteIcon = document.createElement('i');
     favoriteIcon.classList.add('fa-heart', 'favorite');
     favoriteIcon.classList.toggle('fa-solid', !!favorites[itemKey]);
     favoriteIcon.classList.toggle('fa-regular', !favorites[itemKey]);
-
-    const isFavorited = !!favorites[itemKey];
-    favoriteIcon.classList.add(isFavorited ? 'fa-solid' : 'fa-regular');
 
     favoriteIcon.addEventListener('click', (e) => {
       e.preventDefault();
@@ -95,11 +113,10 @@ function updateDOM(mode = 'results') {
 
       saveFavoritesToLocalStorage();
 
+      favoriteSpan.title = favorites[itemKey] ? 'Remove from Favorites' : 'Add to Favorites';
+
       if (favorites[itemKey]) {
-        saveConfirmed.classList.remove('hidden');
-        setTimeout(() => {
-          saveConfirmed.classList.add('hidden');
-        }, 1500);
+        showToast(saveConfirmed);
       }
 
       updateDOM(mode);
