@@ -7,10 +7,13 @@ const saveConfirmed = document.querySelector('.save-confirmed');
 const loader = document.querySelector('.loader');
 const noFavorites = document.querySelector('.no-favorites');
 
-const count = 5;
+let page = 1;
+const pageSize = 8;
 // You can change the query term to fetch different images: galaxy, mars, stars, etc.
 const query = 'nebula'; 
-const apiUrl = `https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image&page_size=${count}`;
+function buildApiUrl() {
+  return `https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image&page_size=${pageSize}&page=${page}`;
+}
 
 let resultsArray = {};
 let resultsItems = [];
@@ -46,10 +49,10 @@ function showFavoritesPage() {
   updateDOM('favorites');
 }
 
-function updateDOM(mode = 'results') {
-  imagesContainer.textContent = '';
+function updateDOM(mode = 'results', append = false, renderItems = null) {
+  if (!append) imagesContainer.textContent = '';
 
-  const items = mode === 'favorites' ? Object.values(favorites) : resultsItems;
+  const items = renderItems ?? (mode === 'favorites' ? Object.values(favorites) : resultsItems);
 
   if (mode === 'favorites' && items.length === 0) {
     showToast(noFavorites);
@@ -157,23 +160,39 @@ function updateDOM(mode = 'results') {
   });
 }
 
-async function getNasaPictures() {
+async function getNasaPictures(append = false) {
   try {
-    const response = await fetch(apiUrl);
+    loader.classList.remove('hidden');
+
+    const response = await fetch(buildApiUrl());
+
     if(!response.ok) {
       const text = await response.text();
       throw new Error(`HTTP ${response.status} ${response.statusText}: ${text.slice(0, 150)}`);
     }
 
     resultsArray = await response.json();
-    console.log('Full response:', resultsArray);
+    const newItems = resultsArray?.collection?.items || [];
+    
+    const existingIds = new Set(resultsItems.map(item => item.data?.[0]?.nasa_id).filter(Boolean));
 
-    resultsItems = resultsArray?.collection?.items || [];
-    console.log('Fetched items:', resultsItems);
+    const filteredNewItems = newItems.filter(item => {
+      const id = item.data?.[0]?.nasa_id;
+      return id && !existingIds.has(id);
+    });
 
-    updateDOM('results');
+    if (append) {
+      resultsItems = [...resultsItems, ...filteredNewItems];
+      updateDOM('results', true, filteredNewItems);
+    } else {
+      resultsItems = newItems;
+      updateDOM('results', false);
+    }
+    
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching images:', error);
+  } finally {
+    loader.classList.add('hidden');
   }
 }
 
@@ -181,13 +200,15 @@ document.getElementById('showFavorites').addEventListener('click', showFavorites
 document.getElementById('showResults').addEventListener('click', showResultsPage);
 
 document.getElementById('loadMore').addEventListener('click', () => {
-  getNasaPictures();
+  page += 1;
+  getNasaPictures(true);
 });
 
 function showResultsPage() {
+  page = 1;
   resultsNav.classList.remove('hidden');
   favoritesNav.classList.add('hidden');
-  updateDOM('results');
+  getNasaPictures(false);
 }
 
 getFavoritesFromLocalStorage();
